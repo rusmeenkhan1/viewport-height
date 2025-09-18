@@ -629,8 +629,8 @@ export const NX_ORIGIN =
     : 'https://da.live/nx';
 
 function ensurePreviewClass() {
-  if (!document.body.classList.contains('da-live-preview-test')) {
-    document.body.classList.add('da-live-preview-test');
+  if (!document.body.classList.contains('da-live-preview')) {
+    document.body.classList.add('da-live-preview');
   }
 }
 
@@ -660,7 +660,7 @@ function ensurePreviewClass() {
   console.log('Has dapreview (any condition):', hasDapreview);
 
   if (hasDapreview) {
-    console.log('Adding da-live-preview-test class');
+    console.log('Adding da-live-preview class');
     ensurePreviewClass();
 
     // Observe body attributes so AEM can’t overwrite the class
