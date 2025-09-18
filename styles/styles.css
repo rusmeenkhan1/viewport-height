@@ -1474,8 +1474,6 @@ main .section.table-container.accordion-container{
   }
  }
 
-.da-live-preview {
-  .carousel-container .carousel.hero-banner.vertical .carousel-slides-container {
+.da-live-preview .carousel-container .carousel.hero-banner.vertical .carousel-slides-container {
     height: 600px;
-  }
 }
