@@ -623,16 +623,16 @@ loadPage();
 const { searchParams, origin } = new URL(window.location.href);
 const branch = searchParams.get('nx') || 'main';
 
-export const NX_ORIGIN = branch === 'local' || origin.includes('localhost') ? 'http://localhost:6456/nx' : 'https://da.live/nx';
+export const NX_ORIGIN =
+  branch === 'local' || origin.includes('localhost')
+    ? 'http://localhost:6456/nx'
+    : 'https://da.live/nx';
 
 (async function loadDa() {
-  /* eslint-disable import/no-unresolved */
-  // Debug: Log current URL and parameters
   console.log('Current URL:', window.location.href);
   console.log('SearchParams dapreview:', searchParams.get('dapreview'));
   console.log('Is in iframe:', window !== window.top);
 
-  // Check parent window URL if in iframe
   let parentUrl = '';
   try {
     if (window !== window.top) {
@@ -644,22 +644,47 @@ export const NX_ORIGIN = branch === 'local' || origin.includes('localhost') ? 'h
   }
 
   // Check multiple conditions for DA Live preview
-  const hasDapreview = searchParams.get('dapreview')
-                      || (window !== window.top && parentUrl.includes('da.live'))
-                      || (window !== window.top && window.location.href.includes('dapreview='));
+  const hasDapreview =
+    searchParams.get('dapreview') ||
+    (window !== window.top && parentUrl.includes('da.live')) ||
+    (window !== window.top && window.location.href.includes('dapreview='));
 
   console.log('Has dapreview (any condition):', hasDapreview);
 
   if (hasDapreview) {
-    console.log('Adding da-live-preview-test class');
+    console.log('Adding da-live-preview-test class to iframe body');
+    // Add class to iframe's body
     document.body.classList.add('da-live-preview-test');
-    // eslint-disable-next-line import/no-unresolved
-    import('https://da.live/scripts/dapreview.js').then(({ default: daPreview }) => daPreview(loadPage));
+
+    // Try also adding class to the iframe element in parent document (same-origin only)
+    if (window !== window.top) {
+      try {
+        const iframes = window.top.document.querySelectorAll('iframe');
+        for (const frame of iframes) {
+          if (frame.contentWindow === window) {
+            console.log('Adding da-live-preview-test class to iframe element');
+            frame.classList.add('da-live-preview-test');
+          }
+        }
+      } catch (e) {
+        console.warn('Cannot modify parent iframe element (cross-origin restriction)');
+      }
+    }
+
+    // Load DA preview script
+    try {
+      const { default: daPreview } = await import('https://da.live/scripts/dapreview.js');
+      daPreview(loadPage);
+    } catch (e) {
+      console.error('Failed to load dapreview.js', e);
+    }
   }
+
   if (searchParams.get('daexperiment')) {
     import(`${NX_ORIGIN}/public/plugins/exp/exp.js`);
   }
-}());
+})();
+
 
 document.addEventListener('DOMContentLoaded', () => {
   document.body.addEventListener('click', (e) => {
